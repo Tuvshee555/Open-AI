@@ -25,41 +25,22 @@ export async function POST(req: Request) {
       );
     }
 
-    // --- 1) Moderation step (last 3 user messages)
-    const userText = messages
-      .filter((m) => m.role === "user")
-      .map((m) => m.content)
-      .slice(-3)
-      .join("\n");
-
-    const moderation = await client.moderations.create({
-      model: "omni-moderation-latest",
-      input: userText,
-    });
-
-    if (moderation.results?.[0]?.flagged) {
-      return NextResponse.json(
-        { error: "Input flagged by moderation" },
-        { status: 400 }
-      );
-    }
-
-    // --- 2) Chat completion
+    // --- Chat completion only (no moderation)
     const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini", // you can swap to gpt-4o if you have access
+      model: "gpt-4o-mini",
       messages,
       max_tokens: 800,
       temperature: 0.2,
     });
 
     return NextResponse.json(completion);
- } catch (err: unknown) {
-  const error = err as Error;
-  console.error("❌ OpenAI API error:", error);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("❌ OpenAI API error:", error);
 
-  return NextResponse.json(
-    { error: error.message ?? "Server error" },
-    { status: 500 }
-  );
- }}
- 
+    return NextResponse.json(
+      { error: error.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+}
