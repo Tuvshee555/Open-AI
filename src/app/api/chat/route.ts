@@ -1,39 +1,56 @@
 // src/app/api/chat/route.ts
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { ChatMessage } from "@/types/openai";
-
-// Ensure key exists
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("❌ Missing OPENAI_API_KEY in environment variables");
-}
+// import { ChatMessage } from "@/types/openai";
 
 // OpenAI client
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Handle POST request
 export async function POST(req: Request) {
-  try {
-    const { messages }: { messages: ChatMessage[] } = await req.json();
+  const formData = await req.formData()
+  const input = formData.get("input") as string
+  const image = formData.get("image") as File | null
 
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: "No valid messages provided" },
-        { status: 400 }
-      );
+
+  try {
+
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = []
+
+    if(input) {
+      messages.push({role: "user", content: input})
     }
 
-    // --- Chat completion only (no moderation)
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages,
-      max_tokens: 800,
-      temperature: 0.2,
-    });
+    if(image) {
+      const buffer = Buffer.from(await image.arrayBuffer())
+      const base64 = buffer.toString("base64")
 
-    return NextResponse.json(completion);
+      messages.push({
+        role: "user",
+        content: [
+          {type: "text", text: input || "Whats in this image?"},
+          {type: "image_url",
+            image_url: {
+              url: `data:${image.type};base64,${base64}`
+            }
+          }
+        ]
+      })
+    }
+
+   const completion = await client.chat.completions.create({
+  model: "gpt-4o-mini", // 👈 correct model
+  messages,
+});
+
+
+    return NextResponse.json({
+      reply: completion.choices[0].message.content
+    })
+
+
+
   } catch (err: unknown) {
     const error = err as Error;
     console.error("❌ OpenAI API error:", error);

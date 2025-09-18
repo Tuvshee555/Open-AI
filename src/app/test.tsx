@@ -13,7 +13,7 @@ type ChatMessage = {
 export default function Home() {
   const [input, setInput] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null); // 👈 for preview
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -127,17 +127,11 @@ export default function Home() {
 
         <div className="flex gap-2">
           <input
-            className="flex-1 text-black border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
             disabled={loading}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault(); // prevent new line
-                sendMessage();
-              }
-            }}
           />
 
           <input
@@ -154,6 +148,20 @@ export default function Home() {
           >
             📷
           </label>
+
+          <input
+            className="border p-2 flex-1"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type a message..."
+            disabled={loading}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault(); // prevent new line
+                sendMessage();
+              }
+            }}
+          />
 
           <button
             onClick={sendMessage}
