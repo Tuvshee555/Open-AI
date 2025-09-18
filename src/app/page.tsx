@@ -1,13 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 // src/app/page.tsx
 "use client";
+//origin
 
 import { useState } from "react";
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
-  image?: string; // 👈 optional image
+  image?: string;
 };
 
 export default function Home() {
@@ -18,14 +19,13 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   async function sendMessage() {
-    if (!input && !image) return; // nothing to send
+    if (!input && !image) return;
     setLoading(true);
 
     const formData = new FormData();
     formData.append("input", input);
     if (image) formData.append("image", image);
 
-    // Add user message immediately
     setMessages((prev) => [
       ...prev,
       {
@@ -35,7 +35,6 @@ export default function Home() {
       },
     ]);
 
-    // Reset inputs
     setInput("");
     setImage(null);
     setPreview(null);
@@ -134,7 +133,7 @@ export default function Home() {
             disabled={loading}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault(); // prevent new line
+                e.preventDefault();
                 sendMessage();
               }
             }}
